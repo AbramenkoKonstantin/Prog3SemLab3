@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using MathNet.Symbolics;
-using MathNet.Numerics;
 using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.LinearAlgebra.Double;
 using MathNet.Numerics.LinearAlgebra.Double.Solvers;
+using Microsoft.Office.Interop.Excel;
+using System.Linq;
+using System.IO;
+using Microsoft.VisualBasic;
 
 namespace Prog3SemLab3
 {
@@ -21,24 +24,34 @@ namespace Prog3SemLab3
         {
             try
             {
-                double[] xValue = new double[xyPointsGridView.RowCount];
-                double[] yValue = new double[xyPointsGridView.RowCount];
-                for (int point = 0; point < xyPointsGridView.RowCount - 1; ++point)
+                Point[] points = new Point[0];
+                for (int index = 0; index < xyPointsGridView.RowCount - 1; ++index)
                 {
-                    xValue[point] = double.Parse(xyPointsGridView[0, point].Value.ToString());
-                    yValue[point] = double.Parse(xyPointsGridView[1, point].Value.ToString());
+                    double xCellValue = double.Parse(xyPointsGridView.Rows[index].Cells[0].Value.ToString());
+                    double yCellValue = double.Parse(xyPointsGridView.Rows[index].Cells[1].Value.ToString());
+                    points = points.Append(new Point(xCellValue, yCellValue)).ToArray();
                 }
-                PointsDraw(xValue, yValue);
-                var coefsContainer = CoefFinding(xValue, yValue);
-                await Task.Run(() => LineDraw(coefsContainer, minX(xValue), maxX(xValue)));
+
+                double minX = points[0].X;
+                double maxX = points[0].X;
+                foreach (Point point in points)
+                {
+                    minX = point.X < minX ? point.X : minX;
+                    maxX = point.X > maxX ? point.X : maxX;
+                }
+
+                PointsDraw(points);
+                await Task.Run(() =>
+                {
+                    LineDraw(LinearCoefsFinding(points), minX, maxX);
+                    CurveDraw(QuadraticCoefsFinding(points), minX, maxX);
+                });
             }
             catch
             {
 
             }
-
         }
-
 
 
         private double minX(double[] xValue)
@@ -55,7 +68,6 @@ namespace Prog3SemLab3
         }
 
 
-
         private double maxX(double[] xValue)
         {
             double maxX = xValue[0];
@@ -69,44 +81,52 @@ namespace Prog3SemLab3
             return maxX;
         }
 
-
-
-        private void PointsDraw(double[] xValue, double[] yValue)
+        private void PointsDraw(Point[] points)
         {
-            chart.Series[0].Points.Clear();
-            for (int point = 0; point < xValue.Length; ++point)
+            var pointsSeria = chart.Series[0];
+            pointsSeria.Points.Clear();
+            for (int index = 0; index < points.Length; ++index)
             {
-                chart.Series[0].Points.AddXY(xValue[point], yValue[point]);
+                pointsSeria.Points.AddXY(points[index].X, points[index].Y);
+            }
+        }
+
+        private void LineDraw(Vector<double> coefsVector, double lowerBorder, double upperBorder)
+        {
+            var lineSeria = chart.Series[1];
+            Invoke((System.Action)(() => lineSeria.Points.Clear()));
+
+            string linearFuncString = coefsVector[0].ToString() + "*x" + "+" + coefsVector[1].ToString();
+            Expression func = Infix.ParseOrThrow(linearFuncString.Replace(',', '.'));
+
+            double x = lowerBorder;
+            double step = (upperBorder - lowerBorder) / 500;
+
+            while (x < upperBorder)
+            {
+                Invoke((System.Action)(() => lineSeria.Points.AddXY(x, FuncValue(x, func))));
+                x += step;
             }
         }
 
 
-
-        private void LineDraw(List<Vector<double>> coefs, double start, double end)
+        private void CurveDraw(Vector<double> coefsVector, double lowerBorder, double upperBorder)
         {
-            Action action = () =>
-            {
-                chart.Series[1].Points.Clear();
-                chart.Series[2].Points.Clear();
-            };
-            Invoke(action);
-            string linearFuncString = "x*" + coefs[0][0].ToString() + "+" + coefs[0][1].ToString();
-            string sqrFuncString = "x^2*" + coefs[1][0].ToString() + "+x*" + coefs[1][1].ToString() + "+" + coefs[1][2].ToString();
-            Expression linearFun = Infix.ParseOrThrow(linearFuncString.Replace(',', '.'));
-            Expression sqrFunc = Infix.ParseOrThrow(sqrFuncString.Replace(',', '.'));
+            var curveSeria = chart.Series[2];
+            Invoke((System.Action)(() => curveSeria.Points.Clear()));
 
-            double step = (end - start) / 1000;
-            while (start < end)
+            string funcString = coefsVector[0].ToString() + "*x^2+" + coefsVector[1].ToString() + "*x" + "+" + coefsVector[2].ToString();
+            Expression func = Infix.ParseOrThrow(funcString.Replace(',', '.'));
+
+            double x = lowerBorder;
+            double step = (upperBorder - lowerBorder) / 500;
+
+            while (x < upperBorder)
             {
-                action = () => {
-                    chart.Series[1].Points.AddXY(start, FuncValue(start, linearFun));
-                    chart.Series[2].Points.AddXY(start, FuncValue(start, sqrFunc));
-                };
-                Invoke(action);
-                start += step;
+                Invoke((System.Action)(() => curveSeria.Points.AddXY(x, FuncValue(x, func))));
+                x += step;
             }
         }
-
 
 
         private double FuncValue(double point, Expression func)
@@ -115,49 +135,101 @@ namespace Prog3SemLab3
             {
                 { "x", point }
             };
-            return MathNet.Symbolics.Evaluate.Evaluate(symbol, func).RealValue;
+            return Evaluate.Evaluate(symbol, func).RealValue;
         }
 
 
-
-        private List<Vector<double>> CoefFinding(double[] xValue, double[] yValue)
+        private Vector<double> LinearCoefsFinding(Point[] points)
         {
-            double sumY = 0;
-            double sumX = 0;
-            double sumSqrX = 0;
-            double sumThrX = 0;
-            double sumQuadX = 0;
-            double sumXY = 0;
-            double sumSqrXY = 0;
-
-            for (int point = 0; point < xValue.Length; ++point)
+            Matrix coefMatrix = DenseMatrix.OfArray(new double[2, 2]
             {
-                sumY += yValue[point];
-                sumX += xValue[point];
-                sumSqrX += Math.Pow(xValue[point], 2);
-                sumThrX += Math.Pow(xValue[point], 3);
-                sumQuadX += Math.Pow(xValue[point], 4);
-                sumXY += xValue[point] * yValue[point];
-                sumSqrXY += Math.Pow(xValue[point], 2) * yValue[point];
+                {0, 0},
+                {0, 0}
+            });
+            Vector<double> answersVector = Vector<double>.Build.Dense(new double[2] { 0, 0 });
+
+            for (int index = 0; index < points.Length; ++index)
+            {
+                answersVector[0] += points[index].X * points[index].Y;
+                answersVector[1] += points[index].Y;
+                coefMatrix[0, 0] += Math.Pow(points[index].X, 2);
+                coefMatrix[0, 1] = coefMatrix[1, 0] += points[index].X;
             }
+            coefMatrix[1, 1] = points.Length;
 
-            Matrix<double> matrix = DenseMatrix.OfArray(new double[,] {
-                {sumQuadX, sumThrX, sumSqrX},
-                {sumThrX, sumSqrX, sumX},
-                {sumSqrX, sumX, xValue.Length - 1}});
-            Vector<double> answers = Vector<double>.Build.Dense(new double[] { sumSqrXY, sumXY, sumY });
-
-            Vector<double> sqrCoefs = matrix.SolveIterative(answers, new MlkBiCgStab());
-            Vector<double> linearCoefs = matrix.SubMatrix(1, 2, 1, 2).SolveIterative(answers.SubVector(1, 2), new MlkBiCgStab());
-
-            List<Vector<double>> coefsContainer = new List<Vector<double>> { linearCoefs, sqrCoefs };
-            return coefsContainer;
+            return coefMatrix.SolveIterative(answersVector, new MlkBiCgStab());
         }
-        
+
+        private Vector<double> QuadraticCoefsFinding(Point[] points)
+        {
+            Matrix coefMatrix = DenseMatrix.OfArray(new double[3, 3]
+{
+                { 0, 0, 0 },
+                { 0, 0, 0 },
+                { 0, 0, 0 }
+});
+            Vector<double> answersVector = Vector<double>.Build.Dense(new double[3] { 0, 0, 0 });
+
+            for (int index = 0; index < points.Length; ++index)
+            {
+                answersVector[0] += Math.Pow(points[index].X, 2) * points[index].Y;
+                answersVector[1] += points[index].X * points[index].Y;
+                answersVector[2] += points[index].Y;
+                coefMatrix[0, 0] += Math.Pow(points[index].X, 4);
+                coefMatrix[0, 1] = coefMatrix[1, 0] += Math.Pow(points[index].X, 3);
+                coefMatrix[0, 2] = coefMatrix[1, 1] = coefMatrix[2, 0] += Math.Pow(points[index].X, 2);
+                coefMatrix[1, 2] = coefMatrix[2, 1] += points[index].X;
+            }
+            coefMatrix[2, 2] = points.Length;
+
+            return coefMatrix.SolveIterative(answersVector, new MlkBiCgStab());
+        }
+
 
         private void CloseBtn_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void excel_Click(object sender, EventArgs e)
+        {
+            xyPointsGridView.Rows.Clear();
+            using (OpenFileDialog excelFile = new OpenFileDialog())
+            {
+                DialogResult result = excelFile.ShowDialog();
+                if (result == DialogResult.OK && Path.GetExtension(excelFile.FileName) == ".xlsx")
+                {
+                    Microsoft.Office.Interop.Excel.Application objExcel = new Microsoft.Office.Interop.Excel.Application();
+                    Workbook objWorkBook = objExcel.Workbooks.Open(excelFile.FileName);
+                    Worksheet objWorkSheet = (Worksheet)objWorkBook.Sheets[1];
+
+                    string[] xColumn = ReadColumn(objWorkSheet, 1);
+                    string[] yColumn = ReadColumn(objWorkSheet, 2);
+
+                    for (int index = 0; index < xColumn.Length; ++index)
+                    {
+                        xyPointsGridView.Rows.Add();
+                        var xCell = xyPointsGridView.Rows[index].Cells[0];
+                        var yCell = xyPointsGridView.Rows[index].Cells[1];
+                        xCell.Value = xColumn[index];
+                        yCell.Value = yColumn[index];
+                    }
+
+                    objWorkBook.Close();
+                    objExcel.Quit();
+                }
+                else if (result == DialogResult.OK)
+                {
+                    MessageBox.Show("Ошибка!", "Неверное расширение файла.");
+                }
+            }
+        }
+
+        private string[] ReadColumn(Worksheet objWorkSheet, int columnIndex)
+        {
+            Range range = objWorkSheet.UsedRange.Columns[columnIndex];
+            Array cellsValues = (Array)range.Cells.Value2;
+            return cellsValues.OfType<object>().Select(o => o.ToString()).ToArray();
         }
     }
 }

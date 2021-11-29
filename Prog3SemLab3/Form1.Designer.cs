@@ -29,19 +29,17 @@ namespace Prog3SemLab3
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            System.Windows.Forms.DataVisualization.Charting.Series series3 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Series series4 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Series series5 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Series series6 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.xyPointsGridView = new System.Windows.Forms.DataGridView();
             this.xValue = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.yValue = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.launchBtn = new System.Windows.Forms.ToolStripMenuItem();
             this.importToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.googleSheetsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.excelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.randomToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.closeBtn = new System.Windows.Forms.ToolStripMenuItem();
             this.chart = new System.Windows.Forms.DataVisualization.Charting.Chart();
             ((System.ComponentModel.ISupportInitialize)(this.xyPointsGridView)).BeginInit();
@@ -94,30 +92,17 @@ namespace Prog3SemLab3
             // importToolStripMenuItem
             // 
             this.importToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.googleSheetsToolStripMenuItem,
-            this.excelToolStripMenuItem,
-            this.randomToolStripMenuItem});
+            this.excelToolStripMenuItem});
             this.importToolStripMenuItem.Name = "importToolStripMenuItem";
             this.importToolStripMenuItem.Size = new System.Drawing.Size(107, 20);
             this.importToolStripMenuItem.Text = "Импортировать";
-            // 
-            // googleSheetsToolStripMenuItem
-            // 
-            this.googleSheetsToolStripMenuItem.Name = "googleSheetsToolStripMenuItem";
-            this.googleSheetsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.googleSheetsToolStripMenuItem.Text = "Google таблицы";
             // 
             // excelToolStripMenuItem
             // 
             this.excelToolStripMenuItem.Name = "excelToolStripMenuItem";
             this.excelToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.excelToolStripMenuItem.Text = "Excel";
-            // 
-            // randomToolStripMenuItem
-            // 
-            this.randomToolStripMenuItem.Name = "randomToolStripMenuItem";
-            this.randomToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.randomToolStripMenuItem.Text = "Рандом";
+            this.excelToolStripMenuItem.Click += new System.EventHandler(this.excel_Click);
             // 
             // closeBtn
             // 
@@ -128,22 +113,22 @@ namespace Prog3SemLab3
             // 
             // chart
             // 
-            chartArea1.Name = "ChartArea1";
-            this.chart.ChartAreas.Add(chartArea1);
+            chartArea2.Name = "ChartArea1";
+            this.chart.ChartAreas.Add(chartArea2);
             this.chart.Location = new System.Drawing.Point(224, 42);
             this.chart.Name = "chart";
-            series1.ChartArea = "ChartArea1";
-            series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Point;
-            series1.Name = "Points";
-            series2.ChartArea = "ChartArea1";
-            series2.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-            series2.Name = "Line";
-            series3.ChartArea = "ChartArea1";
-            series3.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-            series3.Name = "Sqr";
-            this.chart.Series.Add(series1);
-            this.chart.Series.Add(series2);
-            this.chart.Series.Add(series3);
+            series4.ChartArea = "ChartArea1";
+            series4.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Point;
+            series4.Name = "Points";
+            series5.ChartArea = "ChartArea1";
+            series5.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series5.Name = "Line";
+            series6.ChartArea = "ChartArea1";
+            series6.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series6.Name = "Sqr";
+            this.chart.Series.Add(series4);
+            this.chart.Series.Add(series5);
+            this.chart.Series.Add(series6);
             this.chart.Size = new System.Drawing.Size(822, 300);
             this.chart.TabIndex = 2;
             this.chart.Text = "chart";
@@ -176,9 +161,7 @@ namespace Prog3SemLab3
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem launchBtn;
         private System.Windows.Forms.ToolStripMenuItem importToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem googleSheetsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem excelToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem randomToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem closeBtn;
         private System.Windows.Forms.DataVisualization.Charting.Chart chart;
     }

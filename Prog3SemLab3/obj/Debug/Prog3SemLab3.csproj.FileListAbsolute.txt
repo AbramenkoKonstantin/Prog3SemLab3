@@ -34,3 +34,4 @@ C:\Users\kosta\source\repos\Prog3SemLab3\Prog3SemLab3\obj\Debug\Prog3SemLab3.csp
 C:\Users\kosta\source\repos\Prog3SemLab3\Prog3SemLab3\obj\Debug\Prog3SemLab3.csproj.CopyComplete
 C:\Users\kosta\source\repos\Prog3SemLab3\Prog3SemLab3\obj\Debug\Prog3SemLab3.exe
 C:\Users\kosta\source\repos\Prog3SemLab3\Prog3SemLab3\obj\Debug\Prog3SemLab3.pdb
+C:\Users\kosta\source\repos\Prog3SemLab3\Prog3SemLab3\bin\Debug\System.Windows.Forms.DataVisualization.dll
