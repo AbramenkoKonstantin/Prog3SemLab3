@@ -53,34 +53,6 @@ namespace Prog3SemLab3
             }
         }
 
-
-        private double minX(double[] xValue)
-        {
-            double minX = xValue[0];
-            for (int point = 0; point < xValue.Length; ++point)
-            {
-                if (xValue[point] < minX)
-                {
-                    minX = xValue[point];
-                }
-            }
-            return minX;
-        }
-
-
-        private double maxX(double[] xValue)
-        {
-            double maxX = xValue[0];
-            for (int point = 0; point < xValue.Length; ++point)
-            {
-                if (xValue[point] > maxX)
-                {
-                    maxX = xValue[point];
-                }
-            }
-            return maxX;
-        }
-
         private void PointsDraw(Point[] points)
         {
             var pointsSeria = chart.Series[0];
@@ -91,40 +63,42 @@ namespace Prog3SemLab3
             }
         }
 
-        private void LineDraw(Vector<double> coefsVector, double lowerBorder, double upperBorder)
+        private void LineDraw(Vector<double> coefsVector, double aBord, double bBord)
         {
             var lineSeria = chart.Series[1];
-            Invoke((System.Action)(() => lineSeria.Points.Clear()));
+            System.Action action = () => lineSeria.Points.Clear();
+            Invoke(action);
 
             string linearFuncString = coefsVector[0].ToString() + "*x" + "+" + coefsVector[1].ToString();
             Expression func = Infix.ParseOrThrow(linearFuncString.Replace(',', '.'));
 
-            double x = lowerBorder;
-            double step = (upperBorder - lowerBorder) / 500;
+            double step = (bBord - aBord) / 500;
 
-            while (x < upperBorder)
+            while (aBord < bBord)
             {
-                Invoke((System.Action)(() => lineSeria.Points.AddXY(x, FuncValue(x, func))));
-                x += step;
+                action = () => lineSeria.Points.AddXY(aBord, FuncValue(aBord, func));
+                Invoke(action);
+                aBord += step;
             }
         }
 
 
-        private void CurveDraw(Vector<double> coefsVector, double lowerBorder, double upperBorder)
+        private void CurveDraw(Vector<double> coefsVector, double aBord, double bBord)
         {
             var curveSeria = chart.Series[2];
-            Invoke((System.Action)(() => curveSeria.Points.Clear()));
+            System.Action action = () => curveSeria.Points.Clear();
+            Invoke(action);
 
             string funcString = coefsVector[0].ToString() + "*x^2+" + coefsVector[1].ToString() + "*x" + "+" + coefsVector[2].ToString();
             Expression func = Infix.ParseOrThrow(funcString.Replace(',', '.'));
 
-            double x = lowerBorder;
-            double step = (upperBorder - lowerBorder) / 500;
+            double step = (bBord - aBord) / 500;
 
-            while (x < upperBorder)
+            while (aBord < bBord)
             {
-                Invoke((System.Action)(() => curveSeria.Points.AddXY(x, FuncValue(x, func))));
-                x += step;
+                action = () => curveSeria.Points.AddXY(aBord, FuncValue(aBord, func));
+                Invoke(action);
+                aBord += step;
             }
         }
 
